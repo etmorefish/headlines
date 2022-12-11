@@ -5,7 +5,6 @@ use eframe::{
     App,
 };
 use headlines::{render_footer, render_haeder, Headlines};
-// use newsapi::NewsAPI;
 
 impl App for Headlines {
     fn update(&mut self, ctx: &eframe::egui::Context, frame: &mut eframe::Frame) {

@@ -6,8 +6,6 @@ use eframe::{
 };
 use serde::{Deserialize, Serialize};
 
-// use crate::fetch_news;
-
 pub const PADDING: f32 = 5.;
 pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
 pub const BLACK: Color32 = Color32::from_rgb(0, 0, 0);
