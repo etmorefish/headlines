@@ -1,6 +1,7 @@
 use reqwest::Method;
 // use anyhow::Result;
 use serde::Deserialize;
+use ureq::Agent;
 use url::Url;
 // https://newsapi.org/v2/everything?q=Iphone&from=2022-12-10&sortBy=popularity&apiKey=d45b03e5d78642e89229e742d0292f2f
 const BASE_URL: &str = "https://newsapi.org/v2";
@@ -50,7 +51,7 @@ impl Article {
         self.url.as_ref()
     }
 
-    pub fn description(&self) -> Option<&String> {
+    pub fn desc(&self) -> Option<&String> {
         self.description.as_ref()
     }
 }
@@ -86,9 +87,9 @@ pub struct NewsAPI {
 }
 
 impl NewsAPI {
-    pub fn new(api_key: String) -> Self {
+    pub fn new(api_key: &str) -> Self {
         Self {
-            api_key,
+            api_key: api_key.to_string(),
             endpoint: Endpoint::TopHeadlines,
             country: Country::Us,
         }
@@ -115,7 +116,14 @@ impl NewsAPI {
 
     pub fn fetch(&self) -> Result<NewsAPIResponse, NewsApiError> {
         let url = self.prepare_url()?;
-        let req = ureq::get(&url).set("Authorization", &self.api_key);
+        println!("url: {}", url);
+        let proxy = ureq::Proxy::new("http://127.0.0.1:7890");
+        let agent: Agent = ureq::AgentBuilder::new()
+            .proxy(proxy.unwrap())
+            .build();
+        let req = agent.get(&url)
+        .set("Authorization", &self.api_key)
+        .set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4146.4 Safari/537.36");
         let response: NewsAPIResponse = req.call().unwrap().into_json()?;
         match response.status.as_str() {
             "ok" => return Ok(response),
@@ -159,6 +167,22 @@ fn map_response_err(code: Option<String>) -> NewsApiError {
 
 #[cfg(test)]
 mod tests {
+    use ureq::Agent;
+    use std::time::Duration;
+    use super::*;
     #[test]
-    fn it_works() {}
+    fn it_works() {
+        let url = "https://newsapi.org/v2/everything?q=Apple&from=2022-12-13&sortBy=popularity&apiKey=d45b03e5d78642e89229e742d0292f2f";
+        // println!("url: {}", url);
+        // let url = "https://spa3.scrape.center/api/movie/?limit=10&offset=0";
+        let proxy = ureq::Proxy::new("http://127.0.0.1:7890");
+        let agent: Agent = ureq::AgentBuilder::new()
+            // .timeout_read(Duration::from_secs(5))
+            // .timeout_write(Duration::from_secs(5))
+            .proxy(proxy.unwrap())
+            .build();
+        let req = agent.get(url).set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4146.4 Safari/537.36");
+        let response = req.call().unwrap().into_string().unwrap();
+        println!("{}", response);
+    }
 }

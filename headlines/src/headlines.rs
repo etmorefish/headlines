@@ -4,9 +4,9 @@ use eframe::{
     egui::{self, Hyperlink, Layout, RichText, Separator, TextStyle},
     epaint::{Color32, FontFamily, FontId},
 };
+use newsapi::NewsAPI;
 use serde::{Deserialize, Serialize};
 
-use crate::fetch_news;
 
 pub const PADDING: f32 = 5.;
 pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
@@ -107,15 +107,29 @@ impl Headlines {
         configure_text_styles(&cc.egui_ctx);
 
         let config: HeadlinesConfig = confy::load("headlines", "headcfg").unwrap_or_default();
-        let iter = (0..20).map(|a| NewsCardData {
-            title: format!("title {}", a),
-            desc: format!("desc {}", a),
-            url: format!("http://exmaple.com/{}", a),
-        });
+        // let iter = (0..20).map(|a| NewsCardData {
+        //     title: format!("title {}", a),
+        //     desc: format!("desc {}", a),
+        //     url: format!("http://exmaple.com/{}", a),
+        // });
+        // fetch_news(config.api_key, &mut articles)
         Headlines {
-            articles: Vec::from_iter(iter),
+            articles: vec![],
+            api_key_initialized: !config.api_key.is_empty(),
             config,
-            api_key_initialized: false,
+        }
+    }
+    pub fn fetch_news(&mut self) {
+        if let Ok(response) = NewsAPI::new(&self.config.api_key).fetch() {
+            let resp_articles = response.articles();
+            for a in resp_articles.iter() {
+                let news = NewsCardData{
+                    title: a.title().to_string(),
+                    url: a.url().to_string(),
+                    desc: a.desc().map(|s| s.to_string()).unwrap_or("...".to_string()),
+                };
+                self.articles.push(news);
+            }
         }
     }
 
