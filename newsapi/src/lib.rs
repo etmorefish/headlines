@@ -113,6 +113,16 @@ impl NewsAPI {
         Ok(url.to_string())
     }
 
+    pub fn fetch(&self) -> Result<NewsAPIResponse, NewsApiError> {
+        let url = self.prepare_url()?;
+        let req = ureq::get(&url).set("Authorization", &self.api_key);
+        let response: NewsAPIResponse = req.call().unwrap().into_json()?;
+        match response.status.as_str() {
+            "ok" => return Ok(response),
+            _ => return Err(map_response_err(response.code)),
+        }
+    }
+
     pub async fn fetch_async(&self) -> Result<NewsAPIResponse, NewsApiError> {
         let url = self.prepare_url()?;
         let client = reqwest::Client::new();

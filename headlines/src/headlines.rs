@@ -6,6 +6,8 @@ use eframe::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::fetch_news;
+
 pub const PADDING: f32 = 5.;
 pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
 pub const BLACK: Color32 = Color32::from_rgb(0, 0, 0);
@@ -37,14 +39,14 @@ impl Default for HeadlinesConfig {
 
 // #[derive(Default)]
 pub struct Headlines {
-    pub articles: Vec<NewCardData>,
+    pub articles: Vec<NewsCardData>,
     pub config: HeadlinesConfig,
     pub api_key_initialized: bool,
 }
-pub struct NewCardData {
-    title: String,
-    desc: String,
-    url: String,
+pub struct NewsCardData {
+    pub title: String,
+    pub desc: String,
+    pub url: String,
 }
 
 #[inline]
@@ -105,7 +107,7 @@ impl Headlines {
         configure_text_styles(&cc.egui_ctx);
 
         let config: HeadlinesConfig = confy::load("headlines", "headcfg").unwrap_or_default();
-        let iter = (0..20).map(|a| NewCardData {
+        let iter = (0..20).map(|a| NewsCardData {
             title: format!("title {}", a),
             desc: format!("desc {}", a),
             url: format!("http://exmaple.com/{}", a),
