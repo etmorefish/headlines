@@ -7,7 +7,6 @@ use eframe::{
 use newsapi::NewsAPI;
 use serde::{Deserialize, Serialize};
 
-
 pub const PADDING: f32 = 5.;
 pub const WHITE: Color32 = Color32::from_rgb(255, 255, 255);
 pub const BLACK: Color32 = Color32::from_rgb(0, 0, 0);
@@ -123,7 +122,7 @@ impl Headlines {
         if let Ok(response) = NewsAPI::new(&self.config.api_key).fetch() {
             let resp_articles = response.articles();
             for a in resp_articles.iter() {
-                let news = NewsCardData{
+                let news = NewsCardData {
                     title: a.title().to_string(),
                     url: a.url().to_string(),
                     desc: a.desc().map(|s| s.to_string()).unwrap_or("...".to_string()),
